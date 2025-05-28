@@ -5,6 +5,8 @@ from pymongo import MongoClient
 from pymongo.server_api import ServerApi
 import os
 from dotenv import load_dotenv
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 load_dotenv("DB_PASSWORD.env")
 db_password = os.getenv("DB_PASSWORD")
 uri = db_password
@@ -14,7 +16,7 @@ client = MongoClient(
     uri,
     server_api=ServerApi('1'),
 )
-@app.route("/")
+@app.route("/",methods=["GET", "POST"])
 def home():
     return "Flask App is Running!", 200
 @app.route("/api/getdata",methods=["GET", "POST"])
@@ -66,7 +68,7 @@ def login():
                             store = []
                             for inx,k in enumerate(ject[1]):
                                 aps = {}
-                                aps["tries"] = inx + int(tries) - len(graphtopresent) + 1
+                                aps["tries"] = f"สอบครั้งที่ {inx + int(tries) - len(graphtopresent) + 1}"
                                 aps[[f"xi {subject}",f"percentile {subject}", f"ximax {subject}", f"xipercent {subject}", f"zscore {subject}"][inxd]] = k
                                 aps["subject"] = ject[0]
                                 store.append(aps)
@@ -85,5 +87,43 @@ def login():
             return jsonify({"error": "Class not found"}), 404
 
     return jsonify({"ok":True})
+#limiter = Limiter(key_func=get_remote_address)
+#limiter.init_app(app)
+#@app.route("/api/getdata1", methods=["POST"])
+##@limiter.limit("5 per minute")
+#def test():
+#    if request.method == "POST":
+#        db = client["myfirst"]
+#        usersdata = db["storedata"]
+#        user_doc = usersdata.find_one({ "data": { "$exists": True } })
+#        data = request.json
+#        print()
+#        classes = data.get("class")
+#        ID = data.get("id")
+#        subject = data.get("subject")
+#        tries = data.get("tries")
+#        classes = classes.split("/")
+#        if classes[0] in user_doc["data"]["bigdata"]:
+#            print(1)
+#            if classes[1] in user_doc["data"]["bigdata"][classes[0]]:
+#                print(2)
+#                print(ID)
+#                if ID in user_doc["data"]["bigdata"][classes[0]][classes[1]]:
+#                    print(3)
+#        
+#                    if subject in user_doc["data"]["bigdata"][classes[0]][classes[1]][ID]:
+#                        print(4)
+#                        sub:dict = user_doc["data"]["bigdata"][classes[0]][classes[1]][ID][subject]
+#                        return jsonify({"message": "Data already exists"}), 200
+#                    else:
+#                        return jsonify({"error": "Subject not found"}), 404
+#                else:
+#                    return jsonify({"error": "ID not found"}), 404
+#            else:
+#                return jsonify({"error": "Class not found"}), 404
+#        else:
+#            return jsonify({"error": "Class not found"}), 404
+#    return jsonify({"ok":True})
+#
 if __name__ == "__main__":
     app.run(debug=True,port=8000)
